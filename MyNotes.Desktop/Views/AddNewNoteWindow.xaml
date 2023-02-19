@@ -1,0 +1,77 @@
+﻿<metro:MetroWindow
+    x:Class="MyNotes.Desktop.Views.AddNewNoteWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:local="clr-namespace:MyNotes.Desktop"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:styles="http://metro.mahapps.com/winfx/xaml/shared"
+    xmlns:toolkit="http://schemas.xceed.com/wpf/xaml/toolkit"
+    xmlns:viewmodels="clr-namespace:MyNotes.Desktop.ViewModels"
+    x:Name="RootWindow"
+    Width="800"
+    Height="450"
+    d:DataContext="{d:DesignInstance IsDesignTimeCreatable=True,
+                                     Type=viewmodels:AddNewNoteViewModel}"
+    Background="{DynamicResource MaterialDesignDarkBackground}"
+    mc:Ignorable="d">
+
+    <Border
+        Margin="5"
+        CornerRadius="12"
+        Style="{DynamicResource MaterialDesignToolBarMainPanelBorderStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="25" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    Grid.Column="0"
+                    Height="40"
+                    Margin="5,0"
+                    FontSize="18"
+                    Style="{DynamicResource MaterialDesignTextBox}"
+                    Text="{Binding Title}" />
+                <Button
+                    Grid.Column="1"
+                    Height="40"
+                    Margin="6,0,5,0"
+                    Command="{Binding SaveAndCloseCommand}"
+                    CommandParameter="{Binding ElementName=RootWindow}"
+                    Content="ADD NOTE"
+                    Style="{DynamicResource MaterialDesignOutlinedButton}" />
+            </Grid>
+            <metro:ClipBorder Grid.Row="1" CornerRadius="0">
+
+                <toolkit:RichTextBox
+                    Margin="5"
+                    Padding="5"
+                    VerticalContentAlignment="Top"
+                    Style="{DynamicResource MaterialDesignRichTextBox}"
+                    Text="{Binding Description}">
+                    <toolkit:RichTextBoxFormatBarManager.FormatBar>
+                        <toolkit:RichTextBoxFormatBar />
+                    </toolkit:RichTextBoxFormatBarManager.FormatBar>
+                    <toolkit:RichTextBox.TextFormatter>
+                        <toolkit:XamlFormatter />
+                    </toolkit:RichTextBox.TextFormatter>
+                </toolkit:RichTextBox>
+            </metro:ClipBorder>
+
+            <Label
+                Grid.Row="2"
+                Content="Tip: "
+                Style="{DynamicResource MaterialDesignLabel}" />
+        </Grid>
+    </Border>
+
+</metro:MetroWindow>
