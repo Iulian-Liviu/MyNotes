@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyNotes.API.Database;
 using MyNotes.API.Repositories;
+using Newtonsoft.Json;
 
 namespace MyNotes.API
 {
@@ -12,16 +13,25 @@ namespace MyNotes.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddDbContext<NotesDbContext>(options =>
+            builder.Services.AddDbContext<MyNotesDbContext>(options =>
             {
+                options.UseLazyLoadingProxies();
                 options.UseSqlServer(builder.Configuration.GetConnectionString("NotesDatabase"),
-                    b => b.MigrationsAssembly(typeof(NotesDbContext).Assembly.FullName));
-
+                    b => b.MigrationsAssembly(typeof(MyNotesDbContext).Assembly.FullName));
+                
             });
+
+            
+            
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
             builder.Services.AddScoped<INotesRepository, NotesRepository>();
+            builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
+                });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

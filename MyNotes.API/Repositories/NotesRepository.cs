@@ -9,11 +9,11 @@ namespace MyNotes.API.Repositories
 {
     public class NotesRepository : INotesRepository
     {
-        private protected readonly NotesDbContext _context;
+        private protected readonly MyNotesDbContext _context;
         private protected readonly IMapper _mapper;
         private bool disposedValue;
 
-        public NotesRepository(NotesDbContext context, IMapper mapper)
+        public NotesRepository(MyNotesDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
@@ -29,7 +29,7 @@ namespace MyNotes.API.Repositories
 
         public async Task<IEnumerable<NoteResponse>> GetAllNotes(CancellationToken token)
         {
-            return await _context.Notes.Select(s => _mapper.Map<NoteResponse>(s)).ToListAsync();
+            return await _context.Notes.Select(s => _mapper.Map<NoteResponse>(s)).ToListAsync(token);
         }
 
         public async Task<bool> DeleteNote(Guid noteId, CancellationToken token)
