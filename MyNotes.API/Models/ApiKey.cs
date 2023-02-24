@@ -7,8 +7,7 @@ public class ApiKey
     public int KeyId { get; set; }
     public string? Key { get; set; }
 
-    [JsonIgnore]
-    public int UserId { get; set; }
-    [JsonIgnore]
-    public virtual User? User { get; set; }
+    [JsonIgnore] public int UserId { get; set; }
+
+    [JsonIgnore] public virtual User? User { get; set; }
 }

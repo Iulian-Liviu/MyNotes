@@ -3,129 +3,136 @@ using MyNotes.API.Models.DtoModels;
 using MyNotes.API.Models.ErrorResponse;
 using MyNotes.API.Repositories;
 
-namespace MyNotes.API.Controllers
+namespace MyNotes.API.Controllers;
+
+[Route("/api/notes")]
+[ApiController]
+public class NotesController : Controller
 {
-    [Route("/api/notes")]
-    [ApiController]
-    public class NotesController : Controller
+    private readonly INotesRepository _notesRepository;
+
+    public NotesController(INotesRepository notesRepository)
     {
-        private INotesRepository _notesRepository;
-        public NotesController(INotesRepository notesRepository)
+        _notesRepository = notesRepository;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetNotes([FromQuery] string apikey, CancellationToken token)
+    {
+        try
         {
-            _notesRepository = notesRepository;
+            var response = await _notesRepository.GetAllNotes(apikey, token);
+            if (response.StatusType == StatusType.Success) return Ok(response);
+
+            return NotFound(response);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetNotes(CancellationToken token)
+        catch (OperationCanceledException)
         {
-            try
-            {
-                return Ok(await _notesRepository.GetAllNotes(token));
-
-            }
-
-            catch (OperationCanceledException)
-            {
-                return StatusCode(499);
-            }
-
-            catch (Exception e)
-            {
-
-                return Problem(detail: e.Message, "MyNotes.API.Database -> " + e.Source + " -> " + e?.TargetSite?.Name ?? "UNKNOWN METHOD", 500, "Internal Server Error");
-            }
+            return StatusCode(499);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> InsertNote([FromBody] NoteUpload noteUpload, CancellationToken token)
+        catch (Exception e)
         {
-            try
-            {
-                if (!string.IsNullOrEmpty(noteUpload.Title))
-                {
-                    if (await _notesRepository.CreateNote(noteUpload, token))
-                        return Ok();
-                    else
-                        return BadRequest(new BadInputResponse("The specified body was empty or an bad JSON string."));
-                }
-                else
-                {
-                    return BadRequest(new BadInputResponse("At least the title property should be an actual value not empty."));
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                return StatusCode(499);
-            }
-            catch (Exception e)
-            {
-                return Problem(detail: e.Message, "MyNotes.API.Database -> " + e.Source + " -> " + e?.TargetSite?.Name ?? "UNKNOWN METHOD", 500, "Internal Server Error");
-            }
+            return Problem(e.Message,
+                $"MyNotes.API.Database -> {e.Source} -> {e?.TargetSite?.Name}" ?? "UNKNOWN METHOD", 500,
+                "Internal Server Error");
         }
+    }
 
-        [HttpDelete]
-        public async Task<IActionResult> DeleteNote([FromQuery] string noteId, CancellationToken token)
+    [HttpPost]
+    public async Task<IActionResult> InsertNote([FromQuery] string apikey, [FromBody] NoteUpload noteUpload,
+        CancellationToken token)
+    {
+        try
         {
-            try
+            if (!string.IsNullOrEmpty(noteUpload.Title))
             {
-                noteId = noteId.Replace("\"", "");
-                if (await _notesRepository.DeleteNote(Guid.Parse(noteId), token))
-                    return NoContent();
-                else
-                    return BadRequest(new BadInputResponse("There is no note in the database with the specified ID."));
+                var response = await _notesRepository.CreateNote(apikey, noteUpload, token);
+                if (response.StatusType == StatusType.Success)
+                    return Ok();
+                return BadRequest(response);
             }
-            catch (OperationCanceledException)
-            {
-                return StatusCode(499);
-            }
-            catch (FormatException)
-            {
-                return BadRequest(new BadInputResponse("The specified parameter is not a valid GUID string."));
-            }
-            catch (Exception e)
-            {
-                return Problem(detail: e.Message, "MyNotes.API.Database -> " + e.Source + " -> " + e?.TargetSite?.Name ?? "UNKNOWN METHOD", 500, "Internal Server Error");
-            }
+
+            return BadRequest(new BadInputResponse("At least the title property should be an actual value not empty."));
         }
-
-
-        [HttpPut]
-        public async Task<IActionResult> UpdateNote([FromQuery] string noteId, [FromBody] NoteUpload noteUpload, CancellationToken token)
+        catch (OperationCanceledException)
         {
-            try
-            {
-                noteId = noteId.Replace("\"", "");
-                if (!string.IsNullOrEmpty(noteUpload.Title))
-                {
-                    if (await _notesRepository.UpdateNote(Guid.Parse(noteId), noteUpload, token))
-                        return NoContent();
-                    else
-                        return BadRequest(new BadInputResponse("There is no note in the database with the specified ID."));
-                }
-                else
-                {
-                    return BadRequest(new BadInputResponse("At least the title property should be an actual value not empty."));
-
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                return StatusCode(499);
-            }
-            catch (FormatException)
-            {
-                return BadRequest(new BadInputResponse("The specified parameter is not a valid GUID string."));
-            }
-            catch (Exception e)
-            {
-                return Problem(detail: e.Message, "MyNotes.API.Database -> " + e.Source + " -> " + e?.TargetSite?.Name ?? "UNKNOWN METHOD", 500, "Internal Server Error");
-            }
+            return StatusCode(499);
         }
-
-        protected override void Dispose(bool disposing)
+        catch (Exception e)
         {
-            base.Dispose(disposing);
-            _notesRepository.Dispose();
+            return Problem(e.Message,
+                $"MyNotes.API.Database -> {e.Source} -> {e?.TargetSite?.Name}" ?? "UNKNOWN METHOD", 500,
+                "Internal Server Error");
         }
+    }
+
+    [HttpDelete]
+    public async Task<IActionResult> DeleteNote([FromQuery] string apikey, [FromQuery] string noteId,
+        CancellationToken token)
+    {
+        try
+        {
+            noteId = noteId.Replace("\"", "");
+            var response = await _notesRepository.DeleteNote(apikey, Guid.Parse(noteId), token);
+            if (response.StatusType == StatusType.Success)
+                return Ok(response);
+            return BadRequest(response);
+        }
+        catch (OperationCanceledException)
+        {
+            return StatusCode(499);
+        }
+        catch (FormatException)
+        {
+            return BadRequest(new BadInputResponse("The specified parameter is not a valid GUID string."));
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message,
+                "MyNotes.API.Database -> " + e.Source + " -> " + e?.TargetSite?.Name ?? "UNKNOWN METHOD", 500,
+                "Internal Server Error");
+        }
+    }
+
+
+    [HttpPut]
+    public async Task<IActionResult> UpdateNote([FromQuery] string apikey, [FromQuery] string noteId,
+        [FromBody] NoteUpload noteUpload, CancellationToken token)
+    {
+        try
+        {
+            noteId = noteId.Replace("\"", "");
+            if (!string.IsNullOrEmpty(noteUpload.Title))
+            {
+                var response = await _notesRepository.UpdateNote(apikey, Guid.Parse(noteId), noteUpload, token);
+                if (response.StatusType == StatusType.Success)
+                    return Ok(response);
+                return BadRequest(response);
+            }
+
+            return BadRequest(new BadInputResponse("At least the title property should be an actual value not empty."));
+        }
+        catch (OperationCanceledException)
+        {
+            return StatusCode(499);
+        }
+        catch (FormatException)
+        {
+            return BadRequest(new BadInputResponse("The specified parameter is not a valid GUID string."));
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message,
+                "MyNotes.API.Database -> " + e.Source + " -> " + e?.TargetSite?.Name ?? "UNKNOWN METHOD", 500,
+                "Internal Server Error");
+        }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        _notesRepository.Dispose();
     }
 }
