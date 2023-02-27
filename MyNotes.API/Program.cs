@@ -5,19 +5,22 @@ using Newtonsoft.Json;
 
 namespace MyNotes.API;
 
-public class Program
-{
-    public static void Main(string[] args)
-    {
+public class Program {
+    public static void Main(string[] args) {
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        builder.Services.AddDbContext<MyNotesDbContext>(options =>
-        {
+        builder.Services.AddDbContext<MyNotesDbContext>(options => {
             options.UseLazyLoadingProxies();
 
-            options.UseSqlServer(builder.Configuration.GetConnectionString("NotesDatabase"),
-                b => b.MigrationsAssembly(typeof(MyNotesDbContext).Assembly.FullName));
+            /*
+            #if DEBUG
+                        options.UseSqlServer(builder.Configuration.GetConnectionString("NotesDatabase"),
+                            b => b.MigrationsAssembly(typeof(MyNotesDbContext).Assembly.FullName));
+
+            #endif*/
+
+            options.UseNpgsql(builder.Configuration.GetConnectionString("NotesDbSupabase"));
         });
 
 
@@ -26,8 +29,7 @@ public class Program
         builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 
         builder.Services.AddControllers()
-            .AddNewtonsoftJson(options =>
-            {
+            .AddNewtonsoftJson(options => {
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Serialize;
             });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -37,8 +39,7 @@ public class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
+        if (app.Environment.IsDevelopment()) {
             app.UseSwagger();
             app.UseSwaggerUI();
         }

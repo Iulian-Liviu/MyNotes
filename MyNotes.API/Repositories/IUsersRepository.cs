@@ -3,9 +3,8 @@ using MyNotes.API.Models.ErrorResponse;
 
 namespace MyNotes.API.Repositories;
 
-public interface IUsersRepository
-{
-    public Task<ResultResponse<UserResponse>?> GetUserInformation(UserCredentials userCredentials,
+public interface IUsersRepository : IDisposable {
+    public Task<ResultResponse<UserResponse>> GetUserInformation(UserCredentials userCredentials,
         CancellationToken token = default);
 
     public Task<ResultResponse<bool>> CreateUser(UserUpload userUpload, CancellationToken token = default);

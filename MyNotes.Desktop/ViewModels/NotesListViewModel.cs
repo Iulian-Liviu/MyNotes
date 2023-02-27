@@ -9,10 +9,8 @@ using MyNotes.Desktop.Services;
 using MyNotes.Desktop.Views;
 using Xceed.Wpf.Toolkit;
 
-namespace MyNotes.Desktop.ViewModels
-{
-    public partial class NotesListViewModel : ObservableObject
-    {
+namespace MyNotes.Desktop.ViewModels {
+    public partial class NotesListViewModel : ObservableObject {
         private ObservableCollection<Note>? notes;
 
         [ObservableProperty]
@@ -23,10 +21,9 @@ namespace MyNotes.Desktop.ViewModels
 
 
         private Dispatcher _dispatcher = Dispatcher.CurrentDispatcher;
-        private AddNewNoteWindow addNewNote;
+        private AddNewNoteWindow? addNewNote;
 
-        public NotesListViewModel()
-        {
+        public NotesListViewModel() {
             IsLoading = false;
             SelectedNote = null;
             notes = new ObservableCollection<Note>();
@@ -35,8 +32,7 @@ namespace MyNotes.Desktop.ViewModels
         }
 
         [RelayCommand]
-        void OpenNewNoteWindow()
-        {
+        void OpenNewNoteWindow() {
             addNewNote = new AddNewNoteWindow();
 
             addNewNote.ShowDialog();
@@ -44,53 +40,43 @@ namespace MyNotes.Desktop.ViewModels
         }
 
         [RelayCommand]
-        async void RemoveSelectedNote()
-        {
-            if (SelectedNote != null)
-            {
+        async void RemoveSelectedNote() {
+            if (SelectedNote != null) {
                 var response = MessageBox.Show("Do you really want to delete this note.", "Delete Note?", System.Windows.MessageBoxButton.YesNo);
-                if (response == System.Windows.MessageBoxResult.Yes)
-                {
+                if (response == System.Windows.MessageBoxResult.Yes) {
                     await DatabaseService.RemoveNote(SelectedNote.NoteId);
                     SelectedNote = null;
                 }
-                else
-                {
+                else {
                     return;
                 }
             }
         }
 
         [RelayCommand]
-        void UpdateSelectedNote()
-        {
-            if (SelectedNote != null)
-            {
+        void UpdateSelectedNote() {
+            if (SelectedNote != null) {
                 addNewNote = new AddNewNoteWindow(SelectedNote);
                 addNewNote.ShowDialog();
 
             }
         }
 
-        private void DatabaseService_DatabaseOperation(object? sender, System.EventArgs e)
-        {
+        private void DatabaseService_DatabaseOperation(object? sender, System.EventArgs e) {
             LoadDataAsync();
         }
 
-        public ObservableCollection<Note>? Notes
-        {
+        public ObservableCollection<Note>? Notes {
             get { return notes; }
             set { SetProperty(ref notes, value); }
         }
-        private async void LoadDataAsync()
-        {
+        private async void LoadDataAsync() {
             // Show a loading indicator if needed
             IsLoading = true;
             var data = await DatabaseService.GetAllNotes();
 
             // Update view model on UI thread
-            await _dispatcher.InvokeAsync(() =>
-            {
+            await _dispatcher.InvokeAsync(() => {
 
                 // Hide loading indicator if needed
                 CheckAndInsert(data);
@@ -99,20 +85,15 @@ namespace MyNotes.Desktop.ViewModels
             });
         }
 
-        private void CheckAndInsert(List<Note> data)
-        {
-            if (Notes != null)
-            {
+        private void CheckAndInsert(List<Note> data) {
+            if (Notes != null) {
                 Notes.Clear();
-                foreach (var item in data)
-                {
+                foreach (var item in data) {
 
-                    if (item != null && CheckIsXaml(item.Body!))
-                    {
+                    if (item != null && CheckIsXaml(item.Body!)) {
                         Notes.Add(item);
                     }
-                    else if (string.IsNullOrEmpty(item!.Body))
-                    {
+                    else if (string.IsNullOrEmpty(item!.Body)) {
                         item.Body = "";
                         Notes.Add(item);
                     }
@@ -121,16 +102,13 @@ namespace MyNotes.Desktop.ViewModels
             }
         }
 
-        private bool CheckIsXaml(string xamlString)
-        {
+        private bool CheckIsXaml(string xamlString) {
 
             bool containsSection = XamlCheck().IsMatch(xamlString);
-            if (containsSection)
-            {
+            if (containsSection) {
                 return true;
             }
-            else
-            {
+            else {
                 return false;
             }
         }

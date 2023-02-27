@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33402.96
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyNotes.Desktop", "MyNotes.Desktop\MyNotes.Desktop.csproj", "{D69766BE-68AB-45AC-BEBC-50A89DEE21CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyNotes.API", "MyNotes.API\MyNotes.API.csproj", "{E5C0248A-D2EB-4AA8-B87E-CFF7ED711B20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyNotes.API", "MyNotes.API\MyNotes.API.csproj", "{E5C0248A-D2EB-4AA8-B87E-CFF7ED711B20}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
