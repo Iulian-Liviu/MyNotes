@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Text;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using MyNotes.API.Database;
 using MyNotes.API.Helpers;
@@ -49,6 +50,35 @@ public class UsersRepository : IUsersRepository {
                         }*/
         }
 
+        HashSet<string> emptyProperties = new();
+        StringBuilder sb = new("The following properties are empty: ");
+
+        if (string.IsNullOrWhiteSpace(userUpload.Name)) {
+            emptyProperties.Add(nameof(UserUpload.Name).ToLower());
+        }
+        if (string.IsNullOrWhiteSpace(userUpload.Email)) {
+            emptyProperties.Add(nameof(UserUpload.Email).ToLower());
+        }
+        if (string.IsNullOrWhiteSpace(userUpload.Password)) {
+            emptyProperties.Add(nameof(UserUpload.Password).ToLower());
+        }
+        if (string.IsNullOrWhiteSpace(userUpload.UserName)) {
+            emptyProperties.Add(nameof(UserUpload.UserName).ToLower());
+        }
+
+        if (emptyProperties.Count > 0) {
+            sb.AppendJoin(", ", emptyProperties);
+            string errorMessage = sb.ToString();
+
+            return new ResultResponse<bool> {
+                Data = false,
+                DetailedMessage = errorMessage,
+                StatusType = StatusType.None,
+
+                StatusCode = 401
+            };
+        }
+
         var user = new User {
             Email = userUpload.Email,
             Name = userUpload.Name,
@@ -65,7 +95,8 @@ public class UsersRepository : IUsersRepository {
         await _context.SaveChangesAsync(token);
         return new ResultResponse<bool> {
             StatusCode = 200,
-            StatusType = StatusType.Success
+            StatusType = StatusType.Success,
+            DetailedMessage = "The user has been added and an api key was created. Log in to see your key."
         };
     }
 
@@ -87,9 +118,11 @@ public class UsersRepository : IUsersRepository {
 
     public async Task<ResultResponse<UserResponse>> GetUserInformation(UserCredentials userCredentials,
         CancellationToken token) {
+
         var foundUser = await _context.Users.Where(u =>
                 u.Email == userCredentials.Email)
             .FirstOrDefaultAsync(token);
+
         if (foundUser == null)
             return new ResultResponse<UserResponse> {
                 StatusCode = 404,

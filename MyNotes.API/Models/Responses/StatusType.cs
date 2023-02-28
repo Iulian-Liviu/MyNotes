@@ -1,8 +1,8 @@
 ﻿namespace MyNotes.API.Models.ErrorResponse;
 
-public enum StatusType
-{
+public enum StatusType {
     Success,
     Bad,
-    NotFound
+    NotFound,
+    None
 }

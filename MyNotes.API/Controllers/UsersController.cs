@@ -14,7 +14,7 @@ public class UsersController : Controller {
         _usersRepository = usersRepository;
     }
 
-    [HttpGet]
+    [HttpGet("/login")]
     public async Task<IActionResult> GetUserInformation([FromQuery] string email, [FromQuery] string password, CancellationToken token = default) {
         try {
             var credentials = new UserCredentials {
